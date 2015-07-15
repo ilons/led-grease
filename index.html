@@ -1,0 +1,48 @@
+<!doctype html>
+<html>
+ <head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width"/>
+  <title>Led Wall Switch</title>
+  <link rel="stylesheet" type="text/css" href="css/spectrum.css">
+  <script type="text/javascript" src="js/jquery-2.1.3.min.js"></script>
+  <script type="text/javascript" src="js/spectrum.js"></script>
+  <script type="text/javascript" src="js/tinycolor.js"></script>
+  <script type="text/javascript" src="js/kinetic.js"></script>
+  <script type="text/javascript" src="js/main.js"></script>
+  <script type="text/javascript">
+	$(document).ready(function() {
+		var controllerConfig = {
+			hw: {leds: 7},
+			ui: {
+			 	events: [
+					{on: 'click', id: 'powerOn', name: 'power:on'},
+					{on: 'click', id: 'powerOff', name: 'power:off'},
+					{on: 'change', id: 'colorPicker', name: 'color:change'},
+					{on: 'listen', id: 'connectionStatus', name: 'status:change'}
+				]
+			},
+			server: {
+				host: 'localhost',
+				port: 7890,
+				events: {
+					name: 'status:change'
+				}
+			}
+		};
+		LedController.init(controllerConfig);
+	});
+  </script>
+ </head>
+ <body>
+  <div id="connectionStatus"></div>
+  <div class="pwr switch">
+   <ul>
+    <li id="powerOn"><a href="#powerOn">On</a></li>
+    <li id="powerOff"><a href="#powerOff">Off</a></li>
+   </ul>
+  </div>
+  <input type='text' id='colorPicker' value='' />
+  <div id="light_canvas"></div>
+ </body>
+<html>
