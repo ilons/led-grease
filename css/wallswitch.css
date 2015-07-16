@@ -1,0 +1,33 @@
+body {
+	color: #666;
+	font-size: 16pt;
+}
+
+div {
+	border-radius: 5px;
+	text-align: center;
+}
+
+.switch {
+	border: 2px solid #CCC;
+	margin: 2px 0 2px 0;
+}
+.switch > a {
+	text-decoration: none;
+	color: inherit;
+	display: block;
+	padding: 5px 40px;
+}
+.status {
+	border: 2px solid #CCC;
+	background-color: #EEE;
+	padding: 2px;
+	clear: both;
+	font-size: 12pt;
+}
+
+@media (min-width: 600px) {
+	body > div {
+		width: 300px;
+	}
+}

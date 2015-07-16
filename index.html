@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width"/>
   <title>Led Wall Switch</title>
   <link rel="stylesheet" type="text/css" href="css/spectrum.css">
+  <link rel="stylesheet" type="text/css" href="css/wallswitch.css">
   <script type="text/javascript" src="js/jquery-2.1.3.min.js"></script>
   <script type="text/javascript" src="js/spectrum.js"></script>
   <script type="text/javascript" src="js/tinycolor.js"></script>
@@ -34,14 +35,14 @@
   </script>
  </head>
  <body>
-  <div id="connectionStatus"></div>
-  <div class="pwr switch">
-   <ul>
-    <li id="powerOn"><a href="#powerOn">On</a></li>
-    <li id="powerOff"><a href="#powerOff">Off</a></li>
-   </ul>
+  <div class="switch-group">
+   <div class="power switch" id="powerOn"><a href="#powerOn">On</a></div>
+   <div class="power switch" id="powerOff"><a href="#powerOff">Off</a></div>
   </div>
-  <input type='text' id='colorPicker' value='' />
-  <div id="light_canvas"></div>
+  <div class="color-picker">
+   <input type='text' id='colorPicker' class="color-input" value='' />
+   <div id="light_canvas"></div>
+  </div>
+  <div id="connectionStatus" class="status"></div>
  </body>
 <html>
