@@ -5,7 +5,6 @@ var LedController = (function (window, $) {
 	var server;
 
 	var colorInput;
-	var lastColor;
 
 	var config = {
 		hw: {
@@ -28,13 +27,9 @@ var LedController = (function (window, $) {
 	};
 
 	var init = function(config) {
-		console.log("[LedController] init");
+		//console.log("[LedController] init");
 
 		config = $.extend(this.config, config);
-
-		if (config.ui.input !== undefined) {
-			eventChannel.colorInput = config.ui.input;
-		}
 
 		config.api.hw = this.config.hw;
 		config.ui.hw = this.config.hw;
@@ -44,10 +39,13 @@ var LedController = (function (window, $) {
 
 		// Set up ui
 		this.ui = new ControllerUI(eventChannel, config.ui);
+		this.ui.init();
+
 		// Set up new server
 		this.server = new Server(eventChannel, config.server);
 		// Set up api
 		this.api = new ControllerApi(eventChannel, config.api, this.server);
+
 	};
 
 	function Server(eventChannel, config) {
@@ -106,7 +104,7 @@ var LedController = (function (window, $) {
 				return;
 			}
 
-			console.log(packet);
+			//console.log(packet);
 			return socket.send(packet.buffer);
 		};
 
@@ -117,31 +115,30 @@ var LedController = (function (window, $) {
 	};
 
 	function ControllerApi(eventChannel, config, server) {
+		var eventChannel = eventChannel;
 		var config = config;
 		var server = server;
 
 		$(eventChannel).on('power:on', function (event, data) {
-			console.log(eventChannel);
-			console.log("[ControllerApi] power:on, color: ", lastColor); 
-			setColor(lastColor);
+			//console.log("[ControllerApi] power:on, color: ", data); 
 		});
 
 		$(eventChannel).on('power:off', function (event, data) {
-			console.log("[ControllerApi] power:off"); 
+			//console.log("[ControllerApi] power:off"); 
 			var packet = server.createPacket(); // empty package
 			// Call twice to turn off instantly instead of fade out
-			//this.server.push(packet);
+			//server.push(packet);
 			//console.log(server);
 			server.push(packet);
 		});
 
 		$(eventChannel).on('color:change', function (event, data) {
-			color = data.color;
-			leds = {first: 1, count: 7};
-			console.log("[ControllerApi] setColor, color:", color);
 			var packet = server.createPacket();
 			// Don't overwrite packet header
 			var dest = 4;
+
+			// 64 leds is the most one Fadecandy can handle on each pin
+			var leds = {first: 1, count: 64};
 			var defaults = {
 				color: {r: 0, g: 0, b: 0, a: 0}, 
 				leds: {
@@ -150,9 +147,8 @@ var LedController = (function (window, $) {
 				}
 			};
 
-			color = $.extend(defaults.color, color);
+			color = $.extend(defaults.color, data.color);
 			leds = $.extend(defaults.leds, leds);
-
 
 			leds.last = leds.first + leds.count -1;
 			if (leds.last > config.leds) {
@@ -166,22 +162,21 @@ var LedController = (function (window, $) {
 				packet[dest++] = color.b;
 			}
 
-			//console.log(leds);
 			server.push(packet);
-			lastColor = color;
 		});
+
+		return {
+		};
 	}
 
 	function ControllerUI(eventChannel, config) {
 		var config = config;
 		var api = api;
 		var ui = this;
-		var colorPicker;
+		var colorInput;
 
 		var init = function() {
-			ui.colorInput = initColorPicker();
-			console.log("[ControlerUI] init");
-
+			colorInput = initColorPicker();
 
 			$(config.events).each(function () {
 				var eConf = this;
@@ -189,8 +184,9 @@ var LedController = (function (window, $) {
 
 				switch (eConf.name) {
 					case 'power:on':
-						$(el).on(eConf.on, function() {
+						$(el).on(eConf.on, function(event) {
 							setPowerState('power:on', {fade: false});
+							setColor(event, getColor()); 
 						});
 						break;
 					case 'power:off':
@@ -205,19 +201,14 @@ var LedController = (function (window, $) {
 						break;
 					case 'color:change':
 						$(el).on(eConf.on, function(event, data) {
-							console.log(event, data);
 							setColor(event, data);
 						});
 						break;
 				}
-
-
 			});
-
 		};
 
 		var initColorPicker = function () {
-			console.log("[ControlerUI] initColorPicker");
 			var colorPickerConfig = {
 				inputSelector: '#colorPicker',
 				color: "#f00",
@@ -231,27 +222,27 @@ var LedController = (function (window, $) {
 				}
 			
 			};
-			var colorInput = $(colorPickerConfig.inputSelector).spectrum(colorPickerConfig);
-			return colorInput;
+			return $(colorPickerConfig.inputSelector).spectrum(colorPickerConfig);
 		};
 
 		var getColor = function() {
-			console.log(ui.colorPicker);
+			var color = colorInput.spectrum("get");
+			return {
+				rgb: color.toRgb(),
+				hex: color.toHex()
+			};
 		};
 
 		var setColor = function(e, data) {
-			console.log("[ControllerUI] Set color state");
 			$(eventChannel).trigger('color:change', {color: data.rgb});
 		};
 
 		var setPowerState = function(state, fade) {
-			console.log("[ControllerUI] Set power state " + state);
 			$(eventChannel).trigger(state, {fade: fade});
 		};
 
-		init();
-
 		return {
+			init: init,
 			getColor: getColor,
 			setColor: setColor,
 			setPowerState: setPowerState
@@ -265,117 +256,3 @@ var LedController = (function (window, $) {
 		ui: ui
 	};
 })(window, jQuery);
-
-/*
-   $(function() {
-   var leds = 7;
-
-   var led = 0;
-   var r = 0;
-   var g = 0;
-   var b = 0;
-
-   var i;
-
-   var tc;
-   var nc = tinycolor({r: 255, g: 0, b: 0});
-   var hours;
-   var month;
-   var ddate;
-
-   var start = 0;
-
-   var circles = []
-
-   var stage = new Kinetic.Stage({
-   container: 'light_canvas',
-   width: leds*22,
-   height: 100
-   });
-
-   var layer = new Kinetic.Layer();
-   var border = new Kinetic.Circle({
-   x: 0,
-   y: stage.height()/2,
-   radious: 1 * leds,
-   fill: "#CCCCCC",
-   stroke: 'black',
-   strokeWidth: 3,
-   });
-   border.setAttr('position', 1);
-   layer.add(border);
-
-
-   for(led=0; led < leds; led++)
-   {
-   var c1 = new Kinetic.Circle({
-   x: 10+(led*20),
-   y: stage.height()/2,
-   radius: 8,
-   fill: "#000000",
-   stroke: 'black',
-   strokeWidth: 1,
-   });
-
-   c1.setAttr('position', led);
-
-   circles[led] = c1;
-   layer.add(circles[led]);
-   }
-
-   layer.on('mouseover', function() {
-   start = Math.floor(( stage.getPointerPosition().x-10) / 20);
-   drawCircles();
-   });
-   layer.on('touchstart', function() {
-   start = Math.floor(( stage.getPointerPosition().x-10) / 20);
-   drawCircles();
-   });
-   layer.on('touchmove', function() {
-   start = Math.floor(( stage.getPointerPosition().x-10) / 20);
-   drawCircles();
-   });
-
-   stage.add(layer);
-
-$("#colorPicker").on('changed', function(event, data) {
-	updateColor(data.rgb);
-});
-
-function updateColor(rgb) {
-	nc = tinycolor({r: rgb.r, g: rgb.g, b: rgb.b});
-
-	r = nc.toRgb().r;
-	g = nc.toRgb().g;
-	b = nc.toRgb().b;
-	drawCircles();
-}
-
-function drawCircles()
-{
-	var pos = start;
-	var rgb = nc.toRgb();
-	layer.clear();
-	for(led = 0; led < leds; led++)
-	{
-		if(led < start-1 || led > start+1)
-		{
-			circles[led].fill("#000000");
-		}
-		else if(led == (start-1) || led == (start+1) )
-		{
-			var c = tinycolor(nc.toRgb());
-			circles[led].fill("#"+c.darken(10).toHex());
-		}
-		else if(led == start)
-		{
-			circles[led].fill("#"+nc.toHex());
-		}
-		layer.add(circles[led]);
-	}
-	layer.draw();
-
-	LedController.setColor(rgb, {first: pos, count: 3});
-}
-});
-*/
