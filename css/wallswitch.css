@@ -1,33 +1,77 @@
+html {
+	min-height: 100%;
+	padding: 0px;
+}
+
 body {
 	color: #666;
 	font-size: 16pt;
+	width: 100%;
+	margin: 0px;
+	padding: 0px;
 }
 
-div {
-	border-radius: 5px;
+body > div {
 	text-align: center;
 }
 
 .switch {
+	border-radius: 5px;
 	border: 2px solid #CCC;
 	margin: 2px 0 2px 0;
 }
+
 .switch > a {
 	text-decoration: none;
 	color: inherit;
 	display: block;
 	padding: 5px 40px;
 }
+
+.footer {
+	position: absolute;
+	width: 100%;
+	bottom: 0;
+	clear: both;
+}
+
 .status {
+	border-radius: 5px;
 	border: 2px solid #CCC;
 	background-color: #EEE;
 	padding: 2px;
-	clear: both;
 	font-size: 12pt;
 }
 
+/* Color picker CSS */
+.sp-container {
+	border-radius: 5px;
+	border: 2px solid #CCC;
+	width: 100%;
+	margin: 0 auto;
+	overflow: hidden;
+}
+.sp-picker-container {
+	width: 100%;
+	border: initial;
+	position: relative;
+	display: initial;
+	width: 100%;
+	float: initial;
+	padding: 0px;
+}
+
 @media (min-width: 600px) {
-	body > div {
+	body {
 		width: 300px;
+		margin: 5px 0 0 5px;
+	}
+	body > div {
+		width: 100%;
+	}
+
+	.footer {
+		position: initial;
+		bottom: initial;
 	}
 }
